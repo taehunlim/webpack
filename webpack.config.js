@@ -1,6 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 const HtmlwebPackPlugin = require('html-webpack-plugin');
+const {WebpackManifestPlugin} = require('webpack-manifest-plugin');
 
 module.exports = {
     mode: 'development', // for development, when you deploy this app, to use "production"
@@ -8,7 +9,7 @@ module.exports = {
     devtool: 'inline-source-map', // dvelopment mode 에서 JS의 sourch map 제공
 
     devServer: {
-        contentBase: './dist', //  webpack-dev-server to serve the files from the dist directory ( defined in output.path ) on localhost:8080
+        contentBase: '/', //  webpack-dev-server to serve the files from the dist directory ( defined in output.path ) on localhost:8080
     },
 
     entry: {
@@ -93,8 +94,13 @@ module.exports = {
 
         new HtmlwebPackPlugin({
             title: 'Development',
-            template: "./client/build/index.html"
+            template: "./dist/index.html"
         }), // webpack 으로 빌드한 결과물로 HTML 파일을 생성 해주는 plugin
+        
+        new WebpackManifestPlugin({
+            filename: 'manifest.json',
+            basePath: "./dist"
+        }),
         new webpack.ProgressPlugin() // webpback 의 빌드 진행률을 표시
     ]
 }
