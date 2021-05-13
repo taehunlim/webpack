@@ -2,6 +2,10 @@ const path = require('path');
 const webpack = require('webpack');
 const HtmlwebPackPlugin = require('html-webpack-plugin');
 const {WebpackManifestPlugin} = require('webpack-manifest-plugin');
+const {CleanWebpackPlugin} = require('clean-webpack-plugin');
+
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 
 const dotenv = require('dotenv');
 
@@ -19,10 +23,11 @@ module.exports = (env, options) => {
     return {
         mode: 'development', // for development, when you deploy this app, to use "production"
 
-        devtool: 'inline-source-map', // dvelopment mode 에서 JS의 sourch map 제공
+        devtool: DEV ? "inline-source-map" : "", // dvelopment mode 에서 JS의 sourch map 제공 / bundle.map 파일을 만든다. 
     
         devServer: {
-            contentBase: "/", //  webpack-dev-server to serve the files from the dist directory ( defined in output.path ) on localhost:8080
+            contentBase: "./dist", //  webpack-dev-server to serve the files from the dist directory ( defined in output.path ) on localhost:8080,
+            historyApiFallback: true, // React 에서 SPA 라우팅을 위해 설정
         },
     
         entry: {
@@ -37,7 +42,7 @@ module.exports = (env, options) => {
         output: {
             
             // 결과물 파일 생성
-            filename: 'bundle.js', // basic
+            filename: DEV ? "[name].[hash].bundle.js" : '[name].[chunkhash].bundle.js', // basic
             // filename: '[name].bundle.js', // 결과 파일 이름에 entry 속성을 포함하는 옵션
             // filename: '[id].bundle.js', // 결과 파일 이름에 webpack 내부적으로 사용하는 모듈 ID를 포함하는 옵션
             // filenmae: '[name].[hash].bundle.js', // 매 빌드시 마다 고유 해시 값을 붙이는 옵션
@@ -105,23 +110,59 @@ module.exports = (env, options) => {
             // image-webpack-loader: https://github.com/tcoopman/image-webpack-loader
             // webpack-bundle-analyzer-plugin: https://github.com/webpack-contrib/webpack-bundle-analyzer
     
-            new HtmlwebPackPlugin({ //dev
-                title: 'Development',
-                template: "./dist/index.html"
-            }), // webpack 으로 빌드한 결과물로 HTML 파일을 생성 해주는 plugin
+
+            //------------------------common
+            new HtmlwebPackPlugin({
+                template: './client/public/index.html', // 템플릿 경로를 지정
+                templateParameters: { // 템플릿에 주입할 변수들 지정
+                  env: DEV ? '(개발중)' : ''
+                },
+
+                showErrors: true
+            }), // 따로 분리한 bundle한 css파일과 js파일을 각각 html 파일에 link 태그와 script태그로 추가하는 걸 자동화 해줌.
             
             new WebpackManifestPlugin({
                 filename: 'manifest.json',
                 basePath: "./dist"
             }),
-            new webpack.ProgressPlugin(), // webpback 의 빌드 진행률을 표시
 
             new webpack.DefinePlugin({
                 'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
                 'process.env.API_URL': JSON.stringify(process.env.API_URL),
             }),
-         
-        ]
+
+            // webpack.EnvironmentPlugin
+            
+
+            //-------------------------dev
+            new webpack.ProgressPlugin(), // webpback 의 빌드 진행률을 표시
+
+            //-------------------------prod
+
+            new CleanWebpackPlugin(),  // 새로 빌드하가 이전의 빌드물을 제거해줌
+            
+        ],
+        
+        optimization: {
+            
+            splitChunks: {
+              chunks: 'all', // 모듈 중복을 방지해줌, a, b 모듈이 각각 (a,b,c) / (a,b,d) 를 가지고 있을 경우 공통 부분인 a,b 를 따로 분리한 vendor파일 을 만듬
+            }, // vendors
+            runtimeChunk: { 
+                name: "runtime"
+            }, // runtime
+
+            minimizer: [
+                new OptimizeCSSAssetsPlugin({}), //css 압축 (min) 파일로 만들어줌
+      
+                new UglifyJsPlugin({ // 난독화 
+                  cache: true,
+                  parallel: true,
+                  sourceMap: true // set to true if you want JS source maps
+                }),
+            ]
+        },
+
     }
    
 }
