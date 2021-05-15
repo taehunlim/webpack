@@ -47,6 +47,8 @@ module.exports = (env, options) => {
             // filename: '[id].bundle.js', // 결과 파일 이름에 webpack 내부적으로 사용하는 모듈 ID를 포함하는 옵션
             // filenmae: '[name].[hash].bundle.js', // 매 빌드시 마다 고유 해시 값을 붙이는 옵션
             // filename: '[chunkhash].bundle.js', // webpack 각 모듈 내용을 기준으로 생성된 해시 값을 붙이는 옵션
+
+            chunkFilename: '[name].chunk.js', //dynamic import 결과 파일
             
     
             // 결과물 파일의 경로

@@ -1,0 +1,9 @@
+{
+  "./distHome.js": "/Home.chunk.js",
+  "./distRegister.js": "/Register.chunk.js",
+  "./distSub.js": "/Sub.chunk.js",
+  "./distmain.js": "/main.chunk.js",
+  "./distruntime.js": "/runtime.da26acc6522bc4aee742.bundle.js",
+  "./distvendors~main.js": "/vendors~main.chunk.js",
+  "./dist6.chunk.js": "/6.chunk.js"
+}
